@@ -7,6 +7,22 @@ app.use(express.json());
 
 const customers =[];
 
+//Midleware
+function verifyIFExistsAccountCPF(request, response, next){
+    const {cpf} = request.headers;
+
+    const customer = customers.find((customer) => customer.cpf === cpf);
+
+    if(!customer) {
+        return response.status(400).json({error: "Customer not found"});
+    }
+
+    //"Definindo o acesso ao customer"
+    request.customer = customer;
+
+    return next();
+}
+
 //FUNÇÃO RESPONSÁVEL POR CRIAR CONTA
 app.post("/account", (request, response) => {
     const {cpf, name} = request.body;
@@ -35,17 +51,14 @@ app.post("/account", (request, response) => {
     return response.status(201).send();
 });
 
+//Segunda maneira de definir um Midleware
+//Será aplicado em todas as rotas
+//app.use(verifyIFExistsAccountCPF);
+
 //FUNÇÃO RESPONSÁVEL POR TIRAR EXTRATO
-app.get("/statement/:cpf",(request, response)=> {
-    const {cpf} = request.headers;
-
-    const customer = customers.find((customer) => customer.cpf === cpf);
-
-    // Verifica se o customer existe
-    if(!customer) {
-        return response.status(400).json({error: "Customer not found"});
-    }
-
+app.get("/statement/", verifyIFExistsAccountCPF,(request, response)=> {
+    //Existe uma maneira de reapssar a informação que estamos consumindo no midleware para as demais rotas, através do request
+    const {customer} = request;
     return response.json(customer.statement);
 });
 
