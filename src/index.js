@@ -11,7 +11,7 @@ const customers =[];
 app.post("/account", (request, response) => {
     const {cpf, name} = request.body;
 
-    // Irá verificar se minha variavel é igual e se o valor é igual
+    // Irá verificar se minha variavel é igual e se o valor é igual a um cpf ja existente
 
     const customerAlreadyExists =
         customers.some((customer) => customer.cpf === cpf );
@@ -22,6 +22,8 @@ app.post("/account", (request, response) => {
     if(customerAlreadyExists) {
         return response.status(400).json({error: "Customer already exists! "});
     }
+
+    //Definimos as informações que nossa conta terá atráves do customers
 
     customers.push({
         cpf,
@@ -35,10 +37,14 @@ app.post("/account", (request, response) => {
 
 //FUNÇÃO RESPONSÁVEL POR TIRAR EXTRATO
 app.get("/statement/:cpf",(request, response)=> {
-    const {cpf} = request.params;
+    const {cpf} = request.headers;
 
-    //
     const customer = customers.find((customer) => customer.cpf === cpf);
+
+    // Verifica se o customer existe
+    if(!customer) {
+        return response.status(400).json({error: "Customer not found"});
+    }
 
     return response.json(customer.statement);
 });
