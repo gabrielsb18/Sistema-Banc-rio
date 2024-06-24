@@ -2,7 +2,7 @@
 
 - [x] Deve ser possivel criar uma conta
 - [x] Deve ser possivel buscar o extrato bancário do cliente
-- [] Deve ser possivel realizar um deposito
+- [x] Deve ser possivel realizar um deposito
 - [] Deve ser possivel realizar um saque
 - [] Deve ser possivel buscar o extrato bancário do cliente por data
 - [] Deve ser possivel atualizar dados da conta do cliente
