@@ -7,7 +7,7 @@ app.use(express.json());
 
 const customers =[];
 
-//Midleware
+//MIDDLEWARE RESPONSÁVEL POR VERIFICAR SE A CONTA EXISTE
 function verifyIFExistsAccountCPF(request, response, next){
     const {cpf} = request.headers;
 
@@ -23,7 +23,9 @@ function verifyIFExistsAccountCPF(request, response, next){
     return next();
 }
 
+//MIDDLEWARE RESPONSÁVEL POR VERIFICAR O SALDO DA CONTA
 function getBalance(statement) {
+    //Vai pegar as informações do statement e vai fazer um reduce para pegar o valor do saldo
     const balance=statement.reduce((acc, operation)=>{
         if(operation.type === 'credit') {
             return acc + operation.amount;
@@ -63,10 +65,6 @@ app.post("/account", (request, response) => {
     return response.status(201).send();
 });
 
-//Segunda maneira de definir um Midleware
-//Será aplicado em todas as rotas
-//app.use(verifyIFExistsAccountCPF);
-
 //FUNÇÃO RESPONSÁVEL POR TIRAR EXTRATO
 app.get("/statement/", verifyIFExistsAccountCPF,(request, response)=> {
     //Existe uma maneira de reapssar a informação que estamos consumindo no midleware para as demais rotas, através do request
@@ -74,7 +72,20 @@ app.get("/statement/", verifyIFExistsAccountCPF,(request, response)=> {
     return response.json(customer.statement);
 });
 
+//Função responsável por realizar um extrato por data
+app.get("/statement/date", verifyIFExistsAccountCPF,(request, response)=> {
+    const {customer} = request;
+    const {date} = request.query;
 
+    const dateFormat = new Date(date + " 00:00");
+
+    const statement = customer.statement.filter((statement) =>
+        statement.created_at.toDateString()=== new Date(dateFormat).toDateString());
+
+    return response.json(statement);
+});
+
+//FUNÇÃO RESPONSÁVEL POR REALIZAR O DEPOSITO
 app.post("/deposit",verifyIFExistsAccountCPF,(request, response) => {
     const {description, amount} = request.body;
 
@@ -83,7 +94,7 @@ app.post("/deposit",verifyIFExistsAccountCPF,(request, response) => {
     const statementOperation = {
         description,
         amount,
-        cretea_at: new Date(),
+        created_at: new Date(),
         type: "credit"
     };
 
@@ -92,6 +103,7 @@ app.post("/deposit",verifyIFExistsAccountCPF,(request, response) => {
     return response.status(201).send();
 });
 
+//FUNÇÃO REPONSÁVEL PELO SAQUE DA CONTA
 app.post("/withdraw", verifyIFExistsAccountCPF, (request,response)=> {
     const {amount} = request.body;
     const {customer} = request;
@@ -113,4 +125,6 @@ app.post("/withdraw", verifyIFExistsAccountCPF, (request,response)=> {
     return response.status(201).send();
 });
 
-app.listen(3333);
+app.listen(3333, () => {
+    console.log("Servidor funcionando na Porta 3333");
+});
