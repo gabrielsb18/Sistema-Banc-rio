@@ -141,6 +141,24 @@ app.get("/account", verifyIFExistsAccountCPF, (request, response) => {
     return response.json(customer);
 });
 
+//Função responsável por deletar a conta
+app.delete("/account", verifyIFExistsAccountCPF, (request,response)=> {
+    const {customer} = request;
+
+    customers.splice(customer, 1);
+
+    return response.status(204).send();
+});
+
+//Função responsável por retornar o balance da conta
+app.get("/balance", verifyIFExistsAccountCPF, (request, response) => {
+    const {customer} = request;
+
+    const balance = getBalance(customer.statement);
+
+    return response.json(balance);
+});
+
 app.listen(3333, () => {
     console.log("Servidor funcionando na Porta 3333");
 });
